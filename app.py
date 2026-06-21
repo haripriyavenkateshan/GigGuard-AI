@@ -1,8 +1,4 @@
 
-# GigGuard AI — Streamlit App
-# Author: Haripriya V
-# Built for: Capstone Project — Imarticus Learning, Chennai
-# Run: streamlit run app.py
 
 import streamlit as st
 import numpy as np
@@ -12,9 +8,6 @@ import pandas as pd
 import joblib
 import os
 
-# ---------------------------------------------------------
-# Page Configuration
-# ---------------------------------------------------------
 st.set_page_config(
     page_title="GigGuard AI",
     page_icon="🛡️",
@@ -22,21 +15,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---------------------------------------------------------
-# Custom CSS for better UI
-# ---------------------------------------------------------
 st.markdown("""
     <style>
     .main-header {
         font-size: 2.5rem;
         font-weight: bold;
-        color: #B71C1C;
+        color:
         text-align: center;
         margin-bottom: 0.2rem;
     }
     .sub-header {
         font-size: 1.1rem;
-        color: #555;
+        color:
         text-align: center;
         margin-bottom: 1.5rem;
     }
@@ -48,18 +38,15 @@ st.markdown("""
         font-weight: bold;
     }
     .metric-box {
-        background-color: #f8f9fa;
+        background-color:
         padding: 1rem;
         border-radius: 10px;
-        border-left: 5px solid #B71C1C;
+        border-left: 5px solid
         margin-bottom: 0.8rem;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# Load Saved Models
-# ---------------------------------------------------------
 @st.cache_resource
 def load_models():
     try:
@@ -75,9 +62,6 @@ def load_models():
 
 m1, s1, m2, s2, m3, s3, models_loaded = load_models()
 
-# ---------------------------------------------------------
-# Advisory Generator
-# ---------------------------------------------------------
 def generate_advisory(b_pred, a_pred, f_pred, fatigue, hours, success):
     high_count = [b_pred, a_pred, f_pred].count(2)
     med_count  = [b_pred, a_pred, f_pred].count(1)
@@ -110,9 +94,6 @@ def generate_advisory(b_pred, a_pred, f_pred, fatigue, hours, success):
 
     return level, summary, actions, health_score
 
-# ---------------------------------------------------------
-# Earning Collapse Predictor
-# ---------------------------------------------------------
 def predict_collapse(this_week, avg_4_weeks, success, rank_drop, hours_this_week):
     risk = 0.0
     reasons = []
@@ -141,9 +122,6 @@ def predict_collapse(this_week, avg_4_weeks, success, rank_drop, hours_this_week
     label = 'HIGH' if prob >= 0.6 else 'MEDIUM' if prob >= 0.35 else 'LOW'
     return label, prob, ' '.join(reasons) or 'Earnings look stable.', forecast
 
-# ---------------------------------------------------------
-# Header
-# ---------------------------------------------------------
 st.markdown('<div class="main-header">🛡️ GigGuard AI</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">AI-Powered Burnout Detection & Earning Collapse Prediction for Indian Gig Workers</div>', unsafe_allow_html=True)
 
@@ -151,9 +129,6 @@ if not models_loaded:
     st.error("⚠️ Models not loaded. Make sure model1_burnout.pkl, model2_attrition.pkl, model3_freelancer.pkl are in the same folder as app.py")
     st.stop()
 
-# ---------------------------------------------------------
-# Mode Selector
-# ---------------------------------------------------------
 st.sidebar.markdown("## 🔍 Select Mode")
 mode = st.sidebar.radio(
     "Who is using GigGuard?",
@@ -168,9 +143,6 @@ st.sidebar.info("""
 🛡️ Protecting India's 7.7M gig workers
 """)
 
-# ==========================================================
-# MODE 1: WORKER RISK DASHBOARD
-# ==========================================================
 if mode == "👷 Worker Risk Dashboard":
 
     st.markdown("### 📝 Enter Your Work Details")
@@ -208,14 +180,12 @@ if mode == "👷 Worker Risk Dashboard":
 
     if st.button("🚀 Analyze My Risk Now", type="primary", use_container_width=True):
 
-        # Model 1 prediction
         n1 = s1.n_features_in_
         X1_base = [0, wfh_enc, 0, 7, fatigue, tenure]
         if len(X1_base) < n1: X1_base = X1_base + [0.0] * (n1 - len(X1_base))
         elif len(X1_base) > n1: X1_base = X1_base[:n1]
         b_pred = m1.predict(s1.transform(np.array([X1_base])))[0]
 
-        # Model 2 prediction
         n2 = s2.n_features_in_
         X2_base = [0, tenure, 0, 0, 0, 0, 50, ai_tools, hours*5, 30, 5.0,
                    productivity, burnout_self, satisfaction, fear_enc]
@@ -223,9 +193,6 @@ if mode == "👷 Worker Risk Dashboard":
         elif len(X2_base) > n2: X2_base = X2_base[:n2]
         a_pred = m2.predict(s2.transform(np.array([X2_base])))[0]
 
-        # Model 3 prediction
-        # Build input padded to exactly s3.n_features_in_ features
-        # This avoids the ValueError: X has 8 features but scaler expects 14
         p_enc = ["Fiverr","Freelancer","Toptal","Upwork"].index(platform)
         e_enc = ["Entry","Mid","Senior","Expert"].index(exp_level)
         n3 = s3.n_features_in_
@@ -240,7 +207,6 @@ if mode == "👷 Worker Risk Dashboard":
         label_map = {0:"Low", 1:"Medium", 2:"High"}
         level, summary, actions, health_score = generate_advisory(b_pred, a_pred, f_pred, fatigue, hours, job_success)
 
-        # Alert Banner
         if level == 'CRITICAL':
             st.error(summary)
         elif level == 'WARNING':
@@ -250,7 +216,6 @@ if mode == "👷 Worker Risk Dashboard":
 
         st.markdown("---")
 
-        # Risk Cards
         st.markdown("### 🔎 Your Risk Report")
         rc1, rc2, rc3, rc4 = st.columns(4)
         color_map = {"Low": "normal", "Medium": "inverse", "High": "off"}
@@ -261,7 +226,6 @@ if mode == "👷 Worker Risk Dashboard":
 
         st.markdown("---")
 
-        # Charts
         left, right = st.columns(2)
         with left:
             st.markdown("### 📊 Overall Risk Gauge")
@@ -310,7 +274,6 @@ if mode == "👷 Worker Risk Dashboard":
 
         st.markdown("---")
 
-        # Earning Collapse Predictor
         st.markdown("### 💰 Earning Collapse Prediction")
         ec1, ec2 = st.columns(2)
         with ec1:
@@ -334,7 +297,6 @@ if mode == "👷 Worker Risk Dashboard":
 
         st.markdown("---")
 
-        # Advisory
         st.markdown("### 🤖 Your Personalized Advisory (AI Assistant)")
         st.markdown("*GigGuard acts as your personal HR manager — here's what it recommends for you:*")
         for i, action in enumerate(actions, 1):
@@ -343,9 +305,6 @@ if mode == "👷 Worker Risk Dashboard":
         st.markdown("---")
         st.caption("GigGuard AI v2 | Advisory tool only — not medical advice.")
 
-# ==========================================================
-# MODE 2: BUSINESS INTELLIGENCE DASHBOARD
-# ==========================================================
 else:
     st.markdown("### 💼 Platform Business Intelligence Dashboard")
     st.markdown("*This view is designed for Swiggy, Zomato, Ola, Upwork, and other gig platforms*")
@@ -382,7 +341,6 @@ else:
 
         st.markdown("---")
 
-        # ROI Chart
         fig_roi = go.Figure(data=[
             go.Bar(name='Without GigGuard', x=['Replacement Cost', 'Productivity Loss'],
                    y=[total_cost/1e7, productivity_loss/1e7], marker_color='#EF5350'),
@@ -396,7 +354,6 @@ else:
         )
         st.plotly_chart(fig_roi, use_container_width=True)
 
-        # Risk Distribution Donut Chart
         low_pct  = 100 - high_risk_pct - min(35, 100-high_risk_pct)
         mid_pct  = min(35, 100-high_risk_pct)
         fig_pie = go.Figure(data=[go.Pie(
@@ -411,7 +368,6 @@ else:
         )
         st.plotly_chart(fig_pie, use_container_width=True)
 
-        # Recommendations for Platform
         st.markdown("### 💡 GigGuard Recommendations for Your Platform")
         st.success(f"✅ Deploy GigGuard weekly alerts to your top {high_risk_workers:,} high-risk workers.")
         st.warning(f"⚠️ {dropouts:,} workers are expected to drop out this year — GigGuard can prevent {prevented:,} of them.")
